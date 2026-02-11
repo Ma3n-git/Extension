@@ -42,11 +42,29 @@ chrome.webNavigation.onBeforeNavigate.addListener(async (details) => {
         };
         await logMetadata(metadata);
 
-        // Redirect to Internal Gateway
-        const gatewayUrl = chrome.runtime.getURL(`gateway.html?target=${encodeURIComponent(details.url)}`);
-        
-        // Use tabs.update to redirect
-        // chrome.tabs.update(details.tabId, { url: gatewayUrl });
+        // Auto-open the popup to show warning
+        try {
+            await chrome.action.openPopup();
+        } catch (error) {
+            console.log("Could not open popup automatically:", error);
+        }
+
+        // No auto-redirect - user can access AI site directly
+        // Gateway is accessible via the popup toolbar button
+    }
+});
+
+// Listen for messages from popup
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (request.action === 'logContinue') {
+        const metadata = {
+            timestamp: new Date().toISOString(),
+            url: request.url,
+            domain: request.domain,
+            action: 'user_acknowledged_and_continued'
+        };
+        logMetadata(metadata);
+        sendResponse({ success: true });
     }
 });
 

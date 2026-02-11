@@ -1,3 +1,10 @@
 .warningTitle {
+    position: absolute;
+    text-align: center;
+    color: red
+}
+
+h1 {
     color: red;
 }
+

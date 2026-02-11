@@ -8,6 +8,21 @@ const AI_DOMAINS = [
     "copilot.microsoft.com", "designer.microsoft.com", "create.bing.com"
 ];
 
+function isAiDomainCheck(hostname) {
+    // Remove www. prefix
+    const domain = hostname.replace(/^www\./, '').toLowerCase();
+    
+    for (const aiDomain of AI_DOMAINS) {
+        // Exact match
+        if (domain === aiDomain) return true;
+        // Subdomain match (e.g., auth.chatgpt.com matches chatgpt.com)
+        if (domain.endsWith('.' + aiDomain)) return true;
+        // Also check if the AI domain is a subdomain match (e.g., gemini.google.com)
+        if (aiDomain.endsWith('.' + domain) || domain === aiDomain) return true;
+    }
+    return false;
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
     const title = document.getElementById('status-title');
     const message = document.getElementById('status-message');
@@ -24,12 +39,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
 
-    const url = new URL(tab.url);
-    const domain = url.hostname.replace('www.', '');
-    const isAiDomain = AI_DOMAINS.some(d => domain === d || domain.endsWith('.' + d));
+    let url;
+    try {
+        url = new URL(tab.url);
+    } catch (e) {
+        title.textContent = "Unknown";
+        message.textContent = "Cannot parse current URL.";
+        return;
+    }
+
+    const hostname = url.hostname;
+    const isAiDomain = isAiDomainCheck(hostname);
 
     if (isAiDomain) {
-        title.textContent = "AI Domain Detected";
+        title.textContent = "⚠️ AI Domain Detected";
         message.textContent = "You are on an AI website. Your prompts and activity are being monitored. You may use the organization gateway for secure access, or continue with monitoring enabled.";
         
         buttonContainer.style.display = "flex";
@@ -44,11 +67,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         continueBtn.textContent = "Continue (Monitored)";
         continueBtn.onclick = () => {
             // Log that user acknowledged and continued
-            chrome.runtime.sendMessage({ action: 'logContinue', url: tab.url, domain: domain });
+            chrome.runtime.sendMessage({ action: 'logContinue', url: tab.url, domain: hostname });
             window.close();
         };
     } else {
-        title.textContent = "Safe Browsing";
+        title.textContent = "✓ Safe Browsing";
         title.classList.add('safe-title');
         message.textContent = "No AI activity detected on this page.";
         buttonContainer.style.display = "none";

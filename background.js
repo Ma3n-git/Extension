@@ -1,5 +1,10 @@
 // background.js
 
+// ==================== CONFIGURATION ====================
+// Set your organization's logging endpoint here
+const DATABASE_ENDPOINT = 'https://your-org-endpoint.com/api/ai-logs';
+const ENABLE_DATABASE_SYNC = false; // Set to true when endpoint is configured
+
 const AI_DOMAINS = [
     "openai.com", "chatgpt.com", "anthropic.com", "claude.ai", "midjourney.com",
     "perplexity.ai", "poe.com", "jasper.ai", "copy.ai", "quillbot.com",
@@ -42,15 +47,7 @@ chrome.webNavigation.onBeforeNavigate.addListener(async (details) => {
         };
         await logMetadata(metadata);
 
-        // Auto-open the popup to show warning
-        try {
-            await chrome.action.openPopup();
-        } catch (error) {
-            console.log("Could not open popup automatically:", error);
-        }
-
-        // No auto-redirect - user can access AI site directly
-        // Gateway is accessible via the popup toolbar button
+        // Content script handles the warning modal on the page
     }
 });
 
@@ -66,7 +63,68 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         logMetadata(metadata);
         sendResponse({ success: true });
     }
+    
+    if (request.action === 'logPrompt') {
+        const promptData = {
+            timestamp: request.timestamp || new Date().toISOString(),
+            type: 'prompt',
+            domain: request.domain,
+            url: request.url,
+            prompt: request.prompt,
+            captureMethod: request.captureMethod
+        };
+        logPrompt(promptData);
+        sendResponse({ success: true });
+    }
+    
+    return true; // Keep message channel open for async response
 });
+
+// Log prompt data
+async function logPrompt(data) {
+    // Store locally
+    const prompts = await chrome.storage.local.get('ai_prompts') || { ai_prompts: [] };
+    const currentPrompts = prompts.ai_prompts || [];
+    currentPrompts.push(data);
+    
+    // Keep only last 1000 prompts locally to prevent storage overflow
+    if (currentPrompts.length > 1000) {
+        currentPrompts.shift();
+    }
+    
+    await chrome.storage.local.set({ ai_prompts: currentPrompts });
+    console.log('Prompt logged:', data.prompt.substring(0, 50) + '...');
+    
+    // Send to database if enabled
+    if (ENABLE_DATABASE_SYNC) {
+        sendToDatabase(data);
+    }
+}
+
+// Send data to organization database
+async function sendToDatabase(data) {
+    try {
+        const response = await fetch(DATABASE_ENDPOINT, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                // Add authentication headers as needed
+                // 'Authorization': 'Bearer YOUR_API_KEY'
+            },
+            body: JSON.stringify({
+                ...data,
+                extensionVersion: chrome.runtime.getManifest().version,
+                // Add any additional org-specific fields
+            })
+        });
+        
+        if (!response.ok) {
+            console.error('Database sync failed:', response.status);
+        }
+    } catch (error) {
+        console.error('Database sync error:', error);
+    }
+}
 
 async function logMetadata(data) {
     const logs = await chrome.storage.local.get("ai_logs") || { ai_logs: [] };

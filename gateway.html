@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Organization AI Gateway</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .container { background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 500px; width: 100%; text-align: center; }
+        h1 { color: #1a73e8; margin-top: 0; }
+        p { color: #5f6368; }
+        .warning-icon { font-size: 48px; color: #fbbc04; margin-bottom: 1rem; }
+        .details { background: #f8f9fa; padding: 1rem; border-radius: 4px; border: 1px solid #dadce0; margin: 1.5rem 0; text-align: left; word-break: break-all; }
+        .details strong { display: block; margin-bottom: 0.5rem; color: #202124; }
+        .button { background-color: #1a73e8; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; text-decoration: none; font-weight: 500; display: inline-block; }
+        .button:hover { background-color: #1557b0; }
+        .secondary { background-color: transparent; color: #1a73e8; border: 1px solid #dadce0; margin-left: 10px; }
+        .secondary:hover { background-color: #f1f3f4; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="warning-icon">⚠️</div>
+        <h1>AI Access Gateway</h1>
+        <p>You are attempting to access an external AI tool. This activity is monitored by organization security policies.</p>
+        
+        <div class="details">
+            <strong>Attempted Destination:</strong>
+            <span id="target-url">Loading...</span>
+        </div>
+
+        <p><small>Metadata about this access request has been logged.</small></p>
+
+        <a href="#" id="continue-btn" class="button">Log & Continue</a>
+        <a href="javascript:window.close()" class="button secondary">Cancel</a>
+    </div>
+
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const target = params.get('target');
+        document.getElementById('target-url').textContent = target || 'Unknown';
+        
+        if (target) {
+            // Check if target already has query params
+            const separator = target.includes('?') ? '&' : '?';
+            const bypassedTarget = target + separator + 'ai_gateway_bypass=true';
+
+            document.getElementById('continue-btn').href = bypassedTarget;
+            document.getElementById('continue-btn').onclick = (e) => {
+                // Here you could send a final "Assume Acceptance" signal to background.js
+                console.log("User accepted terms for:", target);
+            };
+        }
+    </script>
+</body>
+</html>

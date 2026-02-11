@@ -1,10 +1,31 @@
 {
-  "name": "Hello Extensions",
-  "description": "Base Level Extension",
+  "name": "AI Domain Detector & Gateway",
+  "description": "Detects AI domains and activities, redirecting to an organizational gateway.",
   "version": "1.0",
   "manifest_version": 3,
+  "permissions": [
+    "declarativeNetRequest",
+    "storage",
+    "webNavigation",
+    "tabs"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
   "action": {
     "default_popup": "hello.html",
     "default_icon": "hello_extensions.png"
+  },
+  "declarative_net_request": {
+    "rule_resources": [
+      {
+        "id": "ai_rules",
+        "enabled": false,
+        "path": "rules.json"
+      }
+    ]
   }
 }

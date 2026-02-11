@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const isAiDomain = AI_DOMAINS.some(d => domain === d || domain.endsWith('.' + d));
 
     if (isAiDomain) {
-        title.textContent = "⚠️ AI Domain Detected";
+        title.textContent = "AI Domain Detected";
         message.textContent = "You are on an AI website. Your prompts and activity are being monitored. You may use the organization gateway for secure access, or continue with monitoring enabled.";
         
         buttonContainer.style.display = "flex";
@@ -48,7 +48,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             window.close();
         };
     } else {
-        title.textContent = "✓ Safe Browsing";
+        title.textContent = "Safe Browsing";
         title.classList.add('safe-title');
         message.textContent = "No AI activity detected on this page.";
         buttonContainer.style.display = "none";

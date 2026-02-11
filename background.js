@@ -46,7 +46,7 @@ chrome.webNavigation.onBeforeNavigate.addListener(async (details) => {
         const gatewayUrl = chrome.runtime.getURL(`gateway.html?target=${encodeURIComponent(details.url)}`);
         
         // Use tabs.update to redirect
-        chrome.tabs.update(details.tabId, { url: gatewayUrl });
+        // chrome.tabs.update(details.tabId, { url: gatewayUrl });
     }
 });
 

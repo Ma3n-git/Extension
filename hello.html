@@ -10,9 +10,9 @@
     </style>
   </head>
   <body>
-    <h1 className = "warningTitle">Warning</h1>
-    <p className = "warningMessage">Your prompts are being monitored.</p>
-    <button type="button" className = "button">Continue using this AI</button>
+    <h1 id="status-title" className = "warningTitle">Checking...</h1>
+    <p id="status-message" className = "warningMessage">Please wait.</p>
+    <button id="action-btn" type="button" className = "button" style="display:none;">Action</button>
     <script src="popup.js"></script>
   </body>
 </html>
